@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-solana-green: #14F195;
+  --color-solana-purple: #9945FF;
+  --color-dark-bg: #09090B;
+  --color-dark-surface: #111113;
+  --color-dark-border: #1E1E22;
+  --color-dark-card: #16161A;
+  --color-light-bg: #FAFAFA;
+  --color-light-surface: #FFFFFF;
+  --color-light-border: #E4E4E7;
+  --color-critical: #EF4444;
+  --color-high: #F97316;
+  --color-medium: #EAB308;
+  --color-safe: #22C55E;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* Glowing effects */
+.glow-green {
+  box-shadow: 0 0 20px rgba(20, 241, 149, 0.15), 0 0 40px rgba(20, 241, 149, 0.05);
+}
+
+.glow-purple {
+  box-shadow: 0 0 20px rgba(153, 69, 255, 0.15), 0 0 40px rgba(153, 69, 255, 0.05);
+}
+
+.glow-green-strong {
+  box-shadow: 0 0 30px rgba(20, 241, 149, 0.3), 0 0 60px rgba(20, 241, 149, 0.1);
+}
+
+/* Typing cursor animation */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Pulse animation */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Scan line effect */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.scanline {
+  animation: scanline 3s linear infinite;
+}
+
+/* Matrix rain effect */
+@keyframes float-up {
+  0% { transform: translateY(100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100%); opacity: 0; }
+}
+
+/* Terminal typewriter */
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+/* Gradient border animation */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-border {
+  background: linear-gradient(135deg, #14F195, #9945FF, #14F195);
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Line numbers for code editor */
+.code-editor textarea {
+  font-variant-ligatures: none;
+  tab-size: 4;
+}
+
+.code-editor textarea::selection {
+  background: rgba(153, 69, 255, 0.3);
+}
+
+/* Diff viewer styles */
+.diff-removed {
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 3px solid #EF4444;
+}
+
+.diff-added {
+  background: rgba(34, 197, 94, 0.15);
+  border-left: 3px solid #22C55E;
+}
+
+html {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+body {
+  overflow-x: hidden;
+}
