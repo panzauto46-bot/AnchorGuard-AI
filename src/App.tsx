@@ -3,13 +3,16 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { AuthProvider_ } from './context/AuthContext';
 import { Header } from './components/Header';
 import { LoginModal } from './components/LoginModal';
+import { ProfileModal } from './components/ProfileModal';
+import { AuditHistoryModal } from './components/AuditHistoryModal';
+import { SettingsModal, DEFAULT_SETTINGS } from './components/SettingsModal';
 import { Sidebar } from './components/Sidebar';
 import { ThinkingTerminal } from './components/ThinkingTerminal';
 import { AuditDashboard } from './components/AuditDashboard';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { SAMPLE_CODE } from './data/sampleCode';
 import { generateThinkingTrace, auditSmartContract } from './services/ai';
-import type { ThinkingStep, AuditResult } from './types';
+import type { ThinkingStep, AuditResult, AuditHistoryItem, AppSettings } from './types';
 import { Layers, Brain, FileSearch } from 'lucide-react';
 
 type Phase = 'idle' | 'thinking' | 'results';
@@ -25,6 +28,63 @@ function AppContent() {
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
   /* AI Service Integration */
   const [error, setError] = useState<string | null>(null);
+
+  // Modal States
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Audit History (persisted in localStorage)
+  const [auditHistory, setAuditHistory] = useState<AuditHistoryItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('anchorguard_audit_history');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+
+  // App Settings (persisted in localStorage)
+  const [appSettings, setAppSettings] = useState<AppSettings>(() => {
+    try {
+      const saved = localStorage.getItem('anchorguard_settings');
+      return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+    } catch { return DEFAULT_SETTINGS; }
+  });
+
+  // Persist audit history
+  useEffect(() => {
+    localStorage.setItem('anchorguard_audit_history', JSON.stringify(auditHistory));
+  }, [auditHistory]);
+
+  // Persist settings
+  useEffect(() => {
+    localStorage.setItem('anchorguard_settings', JSON.stringify(appSettings));
+  }, [appSettings]);
+
+  // Save audit to history when complete
+  const saveToHistory = useCallback((result: AuditResult, sourceCode: string) => {
+    if (!appSettings.autoSaveHistory) return;
+    const historyItem: AuditHistoryItem = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+      timestamp: new Date().toISOString(),
+      codeSnippet: sourceCode.slice(0, 200).replace(/\n/g, ' '),
+      securityScore: result.summary.securityScore,
+      totalIssues: result.summary.totalIssues,
+      critical: result.summary.critical,
+      high: result.summary.high,
+      medium: result.summary.medium,
+      safe: result.summary.safe,
+    };
+    setAuditHistory(prev => [historyItem, ...prev].slice(0, appSettings.maxHistoryItems));
+  }, [appSettings.autoSaveHistory, appSettings.maxHistoryItems]);
+
+  const clearHistory = useCallback(() => {
+    setAuditHistory([]);
+    localStorage.removeItem('anchorguard_audit_history');
+  }, []);
+
+  const handleSaveSettings = useCallback((newSettings: AppSettings) => {
+    setAppSettings(newSettings);
+  }, []);
 
   const handleAudit = useCallback(async () => {
     if (!code.trim()) return;
@@ -67,6 +127,8 @@ function AppContent() {
       setTimeout(() => {
         setThinkingComplete(true);
         setAuditResult(result);
+        // Save to history
+        saveToHistory(result, code);
 
         // Auto switch to results
         setTimeout(() => {
@@ -102,8 +164,27 @@ function AppContent() {
 
   return (
     <div className={`min-h-screen flex flex-col ${isDark ? 'bg-dark-bg' : 'bg-light-bg'}`}>
-      <Header />
+      <Header
+        onOpenProfile={() => setProfileOpen(true)}
+        onOpenHistory={() => setHistoryOpen(true)}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
       <LoginModal />
+
+      {/* Functional Modals */}
+      <ProfileModal isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
+      <AuditHistoryModal
+        isOpen={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        history={auditHistory}
+        onClearHistory={clearHistory}
+      />
+      <SettingsModal
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        settings={appSettings}
+        onSaveSettings={handleSaveSettings}
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">

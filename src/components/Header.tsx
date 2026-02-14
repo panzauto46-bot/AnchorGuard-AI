@@ -3,7 +3,13 @@ import { useAuth } from '../context/AuthContext';
 import { UserMenu } from './UserMenu';
 import { Shield, Sun, Moon, Github, LogIn } from 'lucide-react';
 
-export function Header() {
+interface HeaderProps {
+  onOpenProfile?: () => void;
+  onOpenHistory?: () => void;
+  onOpenSettings?: () => void;
+}
+
+export function Header({ onOpenProfile, onOpenHistory, onOpenSettings }: HeaderProps) {
   const { isDark, toggleTheme } = useTheme();
   const { user, openLoginModal } = useAuth();
 
@@ -49,15 +55,18 @@ export function Header() {
 
           {/* Auth Section */}
           {user ? (
-            <UserMenu />
+            <UserMenu
+              onOpenProfile={onOpenProfile}
+              onOpenHistory={onOpenHistory}
+              onOpenSettings={onOpenSettings}
+            />
           ) : (
             <button
               onClick={openLoginModal}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-                isDark
-                  ? 'bg-gradient-to-r from-solana-green/20 to-solana-purple/20 text-white border border-solana-green/20 hover:from-solana-green/30 hover:to-solana-purple/30 hover:shadow-lg hover:shadow-solana-green/10'
-                  : 'bg-gradient-to-r from-solana-purple/10 to-solana-green/10 text-solana-purple border border-solana-purple/20 hover:from-solana-purple/15 hover:to-solana-green/15 hover:shadow-lg hover:shadow-solana-purple/10'
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${isDark
+                ? 'bg-gradient-to-r from-solana-green/20 to-solana-purple/20 text-white border border-solana-green/20 hover:from-solana-green/30 hover:to-solana-purple/30 hover:shadow-lg hover:shadow-solana-green/10'
+                : 'bg-gradient-to-r from-solana-purple/10 to-solana-green/10 text-solana-purple border border-solana-purple/20 hover:from-solana-purple/15 hover:to-solana-green/15 hover:shadow-lg hover:shadow-solana-purple/10'
+                }`}
             >
               <LogIn className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Sign In</span>

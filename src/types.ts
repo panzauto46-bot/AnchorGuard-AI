@@ -55,3 +55,25 @@ export interface User {
   auditsCount: number;
   joinedAt: string;
 }
+
+// Audit History
+export interface AuditHistoryItem {
+  id: string;
+  timestamp: string;
+  codeSnippet: string; // First 200 chars of code
+  securityScore: number;
+  totalIssues: number;
+  critical: number;
+  high: number;
+  medium: number;
+  safe: number;
+}
+
+// App Settings
+export interface AppSettings {
+  aiModel: 'auto' | 'groq' | 'gemini';
+  autoSaveHistory: boolean;
+  maxHistoryItems: number;
+  showThinkingProcess: boolean;
+  network: 'mainnet-beta' | 'devnet' | 'testnet';
+}
