@@ -274,7 +274,7 @@ The `vercel.json` configuration handles:
 - [x] Compute unit optimization suggestions
 - [x] Dark/Light theme support
 - [x] **Secure Authentication** (Google, GitHub via Firebase)
-- [x] Live Groq/Gemini integration for dynamic analysis
+- [x] Live Groq/DeepSeek integration for dynamic analysis
 - [x] **Real Wallet Connection** (Phantom, Solflare, Backpack)
 - [x] **Audit History & Persistence** (localStorage)
 - [x] **Multi-Program Analysis** (tab system + cross-program CPI detection)
