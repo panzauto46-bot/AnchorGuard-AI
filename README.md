@@ -215,6 +215,16 @@ AnchorGuard-AI/
     │
     └── utils/
         └── cn.ts               # Tailwind class merge utility
+
+vscode-extension/               # VS Code & Cursor Extension
+├── package.json                # Extension manifest & commands
+├── tsconfig.json               # TypeScript config (Node.js)
+├── README.md                   # Extension documentation
+└── src/
+    ├── extension.ts            # Extension entry point & commands
+    ├── auditService.ts         # AI service (Groq + Gemini)
+    ├── diagnostics.ts          # Inline diagnostics provider
+    └── webviewPanel.ts         # Results panel webview
 ```
 
 ---
@@ -270,7 +280,7 @@ The `vercel.json` configuration handles:
 - [x] **Multi-Program Analysis** (tab system + cross-program CPI detection)
 - [x] **PDF & Markdown Report Export** (jsPDF + .md download)
 - [x] **User Profile & Settings** (real data, customizable preferences)
-- [ ] IDE extensions (VS Code, Cursor)
+- [x] **IDE Extensions** (VS Code & Cursor — inline diagnostics, results panel, keyboard shortcuts)
 - [ ] On-chain audit verification (Solana Program)
 - [ ] Team collaboration & shared audits
 - [ ] CI/CD integration (GitHub Actions)
