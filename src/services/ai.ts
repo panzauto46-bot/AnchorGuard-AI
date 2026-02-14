@@ -1,22 +1,13 @@
 import { Groq } from 'groq-sdk';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { AuditResult } from '../types';
 
-// Initialize Clients
+// Initialize Groq Client — FREE, fast, handles everything
 const groq = new Groq({
     apiKey: import.meta.env.VITE_GROQ_API_KEY,
-    dangerouslyAllowBrowser: true // Client-side usage for demo
+    dangerouslyAllowBrowser: true
 });
 
-// Gemini Client initialization (lazy load)
-const getGeminiModel = () => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) throw new Error("Gemini API Key is missing. Set VITE_GEMINI_API_KEY in .env or Vercel.");
-    const genAI = new GoogleGenerativeAI(apiKey);
-    return genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-};
-
-// 1. SPEED LAYER: Groq (Llama 3) for Visual Thinking
+// 1. SPEED LAYER: Groq (Llama 3 70B) for Visual Thinking Trace
 export async function generateThinkingTrace(code: string): Promise<string[]> {
     try {
         const completion = await groq.chat.completions.create({
@@ -38,8 +29,7 @@ export async function generateThinkingTrace(code: string): Promise<string[]> {
         const text = completion.choices[0]?.message?.content || "";
         return text.split('\n').filter(line => line.trim().length > 0);
     } catch (error) {
-        console.error("Groq Error:", error);
-        // Fallback logs if API fails or key is missing
+        console.error("Groq Thinking Error:", error);
         return [
             "Initializing static analysis engine...",
             "Parsing AST structure...",
@@ -52,82 +42,93 @@ export async function generateThinkingTrace(code: string): Promise<string[]> {
     }
 }
 
-// 2. BRAIN LAYER: Gemini 1.5 Pro for Deep Audit
+// 2. BRAIN LAYER: Groq (Llama 3 70B) for Deep Security Audit
 export async function auditSmartContract(code: string): Promise<AuditResult> {
-    const model = getGeminiModel();
+    const prompt = `You are an elite Solana Smart Contract Security Auditor.
+Analyze the following Anchor/Rust code for security vulnerabilities.
 
-    const prompt = `
-    You are an elite Solana Smart Contract Security Auditor.
-    Analyze the following Anchor/Rust code for security vulnerabilities.
-    
-    IMPORTANT: The code may contain MULTIPLE programs separated by file markers like:
-    // === FILE: program_name.rs ===
-    If multiple programs are present, you MUST also analyze:
-    - Cross-Program Invocation (CPI) security
-    - Shared PDA seed conflicts between programs
-    - Authority/ownership mismatches across programs
-    - Token account validation across program boundaries
-    
-    Focus on:
-    1. Missing Signer checks
-    2. Missing Owner/Authority checks (has_one)
-    3. Integer Overflow/Underflow
-    4. PDA Validation (seeds, bump)
-    5. Reentrancy
-    6. Unchecked AccountInfo usage
-    7. Cross-Program Invocation vulnerabilities (if multiple programs)
+IMPORTANT: The code may contain MULTIPLE programs separated by file markers like:
+// === FILE: program_name.rs ===
+If multiple programs are present, you MUST also analyze:
+- Cross-Program Invocation (CPI) security
+- Shared PDA seed conflicts between programs
+- Authority/ownership mismatches across programs
+- Token account validation across program boundaries
 
-    Output a JSON object perfectly matching this TypeScript interface:
-    
-    interface AuditResult {
-      vulnerabilities: {
-        id: string; // e.g., "vuln-1"
-        severity: 'critical' | 'high' | 'medium' | 'safe';
-        title: string;
-        description: string;
-        line: number; // Approximate line number
-        category: string;
-        originalCode: string; // The specific lines of buggy code
-        fixedCode: string; // The corrected code
-        explanation: string;
-        computeImpact?: string; // e.g., "+200 CU"
-      }[];
-      summary: {
-        critical: number;
-        high: number;
-        medium: number;
-        safe: number;
-        totalIssues: number;
-        securityScore: number; // 0-100
-        computeOptimizations: number;
-      };
-      gasOptimizations: {
-        id: string;
-        title: string;
-        description: string;
-        estimatedSaving: string;
-        suggestion: string;
-      }[];
-    }
+Focus on:
+1. Missing Signer checks
+2. Missing Owner/Authority checks (has_one)
+3. Integer Overflow/Underflow
+4. PDA Validation (seeds, bump)
+5. Reentrancy
+6. Unchecked AccountInfo usage
+7. Cross-Program Invocation vulnerabilities (if multiple programs)
 
-    Return ONLY raw JSON. No markdown formatting.
-    
-    CODE TO AUDIT:
-    ${code}
-  `;
+Output a JSON object perfectly matching this TypeScript interface:
+
+interface AuditResult {
+  vulnerabilities: {
+    id: string; // e.g., "vuln-1"
+    severity: 'critical' | 'high' | 'medium' | 'safe';
+    title: string;
+    description: string;
+    line: number; // Approximate line number
+    category: string;
+    originalCode: string; // The specific lines of buggy code
+    fixedCode: string; // The corrected code
+    explanation: string;
+    computeImpact?: string; // e.g., "+200 CU"
+  }[];
+  summary: {
+    critical: number;
+    high: number;
+    medium: number;
+    safe: number;
+    totalIssues: number;
+    securityScore: number; // 0-100
+    computeOptimizations: number;
+  };
+  gasOptimizations: {
+    id: string;
+    title: string;
+    description: string;
+    estimatedSaving: string;
+    suggestion: string;
+  }[];
+}
+
+Return ONLY raw JSON. No markdown formatting. No explanation outside the JSON.
+
+CODE TO AUDIT:
+${code}`;
 
     try {
-        const result = await model.generateContent(prompt);
-        const response = result.response;
-        const text = response.text();
+        const completion = await groq.chat.completions.create({
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a Solana security auditor. You MUST respond with ONLY valid JSON matching the requested interface. No markdown, no explanation, no code blocks — just raw JSON."
+                },
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ],
+            model: "llama3-70b-8192",
+            temperature: 0.3,
+            max_tokens: 4096,
+            response_format: { type: "json_object" },
+        });
 
-        // Clean up potential markdown code blocks
+        const text = completion.choices[0]?.message?.content || "";
+
+        // Clean up just in case
         const jsonString = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
         return JSON.parse(jsonString) as AuditResult;
     } catch (error: any) {
-        console.error("Gemini Error:", error);
-        const detail = error?.message || error?.statusText || 'Unknown error';
+        console.error("Groq Audit Error:", error);
+        const detail = error?.message || 'Unknown error';
         throw new Error(`Failed to perform deep audit: ${detail}`);
     }
 }
