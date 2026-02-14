@@ -40,6 +40,7 @@ AnchorGuard runs on a dual-core AI architecture to balance speed and accuracy:
 | **Professional Editor** | Integrated **Monaco Editor** (VS Code engine) with custom Solana Rust syntax highlighting and dark/light themes. |
 | **Transparent AI Reasoning** | Watch the AI "think" through each vulnerability with full chain-of-thought reasoning steps displayed in real-time. |
 | **Deep Vulnerability Scan** | Detects critical issues like missing signer checks, integer overflow, authority validation gaps, and PDA issues. |
+| **Secure Authentication** | **Hybrid Auth System**: Real login via **Google/GitHub** (Firebase) and **Wallet Connection** (Phantom/Solflare) for seamless Web2 & Web3 access. |
 | **Auto-Fix & Diff View** | Generates instant code fixes with side-by-side diff comparison — vulnerable vs. secure code, one click to copy. |
 | **Compute Unit Optimizer** | Analyzes compute unit efficiency and provides gas optimization suggestions specific to the Solana runtime. |
 
@@ -66,6 +67,8 @@ VITE_GEMINI_API_KEY="your_gemini_api_key"
 | **Language** | TypeScript 5.9 | Full type safety across the entire codebase |
 | **Build Tool** | Vite 7 | Lightning-fast HMR and optimized builds |
 | **Styling** | Tailwind CSS 4 | Utility-first CSS with custom Solana theme tokens |
+| **Auth (Web2)** | Firebase Auth | Secure Google & GitHub login integration |
+| **Auth (Web3)** | Solana Wallet Adapter | Native connection for Phantom, Solflare, Backpack |
 | **Icons** | Lucide React | Beautiful, consistent icon set |
 | **Typography** | Inter + JetBrains Mono | Clean UI font paired with developer-grade monospace |
 | **Deployment** | Vercel | Edge-optimized global deployment |
@@ -138,6 +141,15 @@ npm run preview
 │                       │  • Gas Optimizations     │  │
 │                       │                          │  │
 │                       └──────────────────────────┘  │
+│                                  │                  │
+│                                  ▼                  │
+│                       ┌──────────────────────────┐  │
+│                       │                          │  │
+│                       │   Authentication         │  │
+│                       │  • Google / GitHub       │  │
+│                       │  • Phantom / Solflare    │  │
+│                       │                          │  │
+│                       └──────────────────────────┘  │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -165,6 +177,9 @@ AnchorGuard-AI/
     ├── App.tsx                 # Root application component
     ├── index.css               # Global styles & Tailwind theme
     ├── types.ts                # TypeScript type definitions
+    ├── services/
+    │   ├── ai.ts               # Hybrid AI (Groq + Gemini) service
+    │   └── firebase.ts         # Firebase Auth configuration
     │
     ├── components/
     │   ├── Header.tsx          # Navigation header with auth
@@ -179,11 +194,11 @@ AnchorGuard-AI/
     │
     ├── context/
     │   ├── AuthContext.tsx      # Authentication state management
+    │   ├── WalletContextProvider.tsx # Solana Wallet Adapter context
     │   └── ThemeContext.tsx     # Dark/Light theme management
     │
     ├── data/
-    │   ├── auditEngine.ts      # Core audit logic & vulnerability data
-    │   └── sampleCode.ts       # Sample Anchor program for demo
+    │   ├── sampleCode.ts       # Sample Anchor program for demo
     │
     └── utils/
         └── cn.ts               # Tailwind class merge utility
@@ -235,9 +250,9 @@ The `vercel.json` configuration handles:
 - [x] Auto-fix code generation with diff view
 - [x] Compute unit optimization suggestions
 - [x] Dark/Light theme support
-- [x] Authentication UI (Google, GitHub, Wallet)
+- [x] **Secure Authentication** (Google, GitHub via Firebase)
 - [x] Live Groq/Gemini integration for dynamic analysis
-- [x] Real wallet connection (Phantom, Solflare, Backpack)
+- [x] **Real Wallet Connection** (Phantom, Solflare, Backpack)
 - [ ] Audit history & persistence
 - [ ] Multi-program analysis
 - [ ] PDF/Markdown report export
