@@ -30,9 +30,9 @@
 ## ✨ Key Features
 
 ### 🧠 Hybrid AI Engine
-AnchorGuard runs on a dual-core AI architecture to balance speed and accuracy:
-- **Speed Layer (Groq Llama 3):** Generates real-time "Thinking Process" logs, giving users immediate visual feedback (token streaming >800 t/s).
-- **Brain Layer (Google Gemini 1.5 Pro):** Performs deep-dive security audits in the background, capable of understanding complex reentrancy paths and logic errors with massive context windows.
+AnchorGuard runs on a dual-core AI architecture to balance speed and intelligence:
+- **Speed Layer (Groq — Llama 3.3 70B):** Generates real-time "Thinking Process" logs, giving users immediate visual feedback (token streaming >800 t/s). Also serves as fallback audit engine.
+- **Brain Layer (DeepSeek V3):** Performs deep-dive security audits with state-of-the-art reasoning, capable of understanding complex reentrancy paths and logic errors. **100% FREE** (5M tokens/day).
 
 ### 🛡️ Core Capabilities
 | Feature | Description |
@@ -55,10 +55,10 @@ To enable the AI capabilities, you need to set up the following API keys in a `.
 
 ```bash
 VITE_GROQ_API_KEY="your_groq_api_key"
-VITE_GEMINI_API_KEY="your_gemini_api_key"
+VITE_DEEPSEEK_API_KEY="your_deepseek_api_key"
 ```
-1. **Groq API:** Get it from [Groq Cloud](https://console.groq.com)
-2. **Gemini API:** Get it from [Google AI Studio](https://aistudio.google.com)
+1. **Groq API (FREE):** Get it from [Groq Cloud](https://console.groq.com) — Used for thinking trace + fallback audit
+2. **DeepSeek API (FREE):** Get it from [DeepSeek Platform](https://platform.deepseek.com) — Used for deep audit (5M tokens/day free)
 
 
 ---
