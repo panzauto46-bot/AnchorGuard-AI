@@ -71,7 +71,7 @@ export interface AuditHistoryItem {
 
 // App Settings
 export interface AppSettings {
-  aiModel: 'auto' | 'groq' | 'gemini';
+  aiModel: 'auto' | 'groq' | 'deepseek';
   autoSaveHistory: boolean;
   maxHistoryItems: number;
   showThinkingProcess: boolean;

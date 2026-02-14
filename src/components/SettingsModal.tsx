@@ -97,7 +97,7 @@ export function SettingsModal({ isOpen, onClose, settings, onSaveSettings }: Set
                             AI Model
                         </label>
                         <div className="grid grid-cols-3 gap-2">
-                            {(['auto', 'groq', 'gemini'] as const).map(model => (
+                            {(['auto', 'groq', 'deepseek'] as const).map(model => (
                                 <button
                                     key={model}
                                     onClick={() => setLocalSettings(s => ({ ...s, aiModel: model }))}
@@ -110,12 +110,12 @@ export function SettingsModal({ isOpen, onClose, settings, onSaveSettings }: Set
                                             : 'bg-zinc-50 border-light-border text-zinc-500 hover:bg-zinc-100'
                                         }`}
                                 >
-                                    {model === 'auto' ? '🤖 Auto' : model === 'groq' ? '⚡ Groq' : '🧠 Gemini'}
+                                    {model === 'auto' ? '🤖 Auto' : model === 'groq' ? '⚡ Groq' : '🧠 DeepSeek'}
                                 </button>
                             ))}
                         </div>
                         <p className={`text-[10px] mt-1 ${isDark ? 'text-zinc-600' : 'text-zinc-400'}`}>
-                            Auto uses Groq for speed + Gemini for deep analysis
+                            Auto uses Groq for speed + DeepSeek for deep analysis
                         </p>
                     </div>
 

@@ -11,7 +11,7 @@ export function exportToMarkdown(result: AuditResult): string {
 
     let md = `# 🛡️ AnchorGuard AI — Security Audit Report\n\n`;
     md += `**Generated:** ${now}  \n`;
-    md += `**Engine:** Hybrid AI (Groq + Gemini)  \n`;
+    md += `**Engine:** Hybrid AI (Groq + DeepSeek)  \n`;
     md += `**Risk Level:** ${riskLevel}  \n\n`;
     md += `---\n\n`;
 
@@ -117,7 +117,7 @@ export function downloadPDF(result: AuditResult) {
     doc.setTextColor(160, 160, 180);
     doc.setFontSize(8);
     doc.text(`Generated: ${now}`, margin, y + 24);
-    doc.text(`Engine: Hybrid AI (Groq + Gemini)`, margin, y + 30);
+    doc.text(`Engine: Hybrid AI (Groq + DeepSeek)`, margin, y + 30);
 
     y = 55;
 

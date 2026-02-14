@@ -158,7 +158,7 @@ function AppContent() {
         }, index * 800);
       });
 
-      // 2. Start Gemini Deep Audit (Brain Layer)
+      // 2. Start DeepSeek/Groq Deep Audit (Brain Layer)
       // Note: If API key is missing, this will throw an error caught below
       const result = await auditSmartContract(codeToAudit);
 
