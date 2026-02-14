@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { Shield, AlertCircle, AlertTriangle, Info, Zap, TrendingDown } from 'lucide-react';
+import { Shield, AlertCircle, AlertTriangle, Info, Zap, TrendingDown, Download, FileText, Check } from 'lucide-react';
 import type { AuditResult } from '../types';
 import { VulnerabilityCard } from './VulnerabilityCard';
 import { GasOptimizer } from './GasOptimizer';
+import { downloadMarkdown, downloadPDF } from '../services/export';
 
 interface AuditDashboardProps {
   result: AuditResult;
@@ -11,18 +13,20 @@ interface AuditDashboardProps {
 export function AuditDashboard({ result }: AuditDashboardProps) {
   const { isDark } = useTheme();
   const { summary } = result;
+  const [exportedMd, setExportedMd] = useState(false);
+  const [exportedPdf, setExportedPdf] = useState(false);
 
   const scoreColor = summary.securityScore >= 80
     ? 'text-green-400'
     : summary.securityScore >= 50
-    ? 'text-yellow-400'
-    : 'text-red-400';
+      ? 'text-yellow-400'
+      : 'text-red-400';
 
   const scoreRingColor = summary.securityScore >= 80
     ? '#22C55E'
     : summary.securityScore >= 50
-    ? '#EAB308'
-    : '#EF4444';
+      ? '#EAB308'
+      : '#EF4444';
 
   const circumference = 2 * Math.PI * 40;
   const offset = circumference - (summary.securityScore / 100) * circumference;
@@ -36,6 +40,38 @@ export function AuditDashboard({ result }: AuditDashboardProps) {
           <h2 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-zinc-900'}`}>
             Audit Summary
           </h2>
+          <div className="ml-auto flex items-center gap-1.5">
+            <button
+              onClick={() => {
+                downloadMarkdown(result);
+                setExportedMd(true);
+                setTimeout(() => setExportedMd(false), 2000);
+              }}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all ${isDark
+                ? 'text-zinc-400 hover:text-white hover:bg-white/10 border border-dark-border'
+                : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 border border-light-border'
+                }`}
+              title="Export as Markdown"
+            >
+              {exportedMd ? <Check className="w-3 h-3 text-solana-green" /> : <FileText className="w-3 h-3" />}
+              .md
+            </button>
+            <button
+              onClick={() => {
+                downloadPDF(result);
+                setExportedPdf(true);
+                setTimeout(() => setExportedPdf(false), 2000);
+              }}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all ${isDark
+                ? 'bg-solana-purple/20 text-solana-purple hover:bg-solana-purple/30 border border-solana-purple/30'
+                : 'bg-solana-purple/10 text-solana-purple hover:bg-solana-purple/20 border border-solana-purple/20'
+                }`}
+              title="Export as PDF"
+            >
+              {exportedPdf ? <Check className="w-3 h-3 text-solana-green" /> : <Download className="w-3 h-3" />}
+              PDF
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center gap-6">
