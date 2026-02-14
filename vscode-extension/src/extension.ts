@@ -140,15 +140,15 @@ async function runAudit(
     // Check API keys
     const config = vscode.workspace.getConfiguration('anchorguard');
     const groqKey = config.get<string>('groqApiKey');
-    const geminiKey = config.get<string>('geminiApiKey');
+    const deepseekKey = config.get<string>('deepseekApiKey');
 
-    if (!geminiKey) {
+    if (!deepseekKey) {
         const action = await vscode.window.showErrorMessage(
-            'AnchorGuard: Gemini API Key is required for deep audit.',
+            'AnchorGuard: DeepSeek API Key is required for deep audit.',
             'Open Settings'
         );
         if (action === 'Open Settings') {
-            vscode.commands.executeCommand('workbench.action.openSettings', 'anchorguard.geminiApiKey');
+            vscode.commands.executeCommand('workbench.action.openSettings', 'anchorguard.deepseekApiKey');
         }
         return;
     }
@@ -174,12 +174,12 @@ async function runAudit(
             outputChannel.appendLine('\n✅ Thinking complete. Starting deep audit...\n');
         }
 
-        // Phase 2: Deep Audit (Gemini)
+        // Phase 2: Deep Audit (DeepSeek V3)
         if (showThinking) {
-            outputChannel.appendLine('⏳ Phase 2: Deep Security Audit (Gemini 1.5 Pro)...\n');
+            outputChannel.appendLine('⏳ Phase 2: Deep Security Audit (DeepSeek V3)...\n');
         }
 
-        const result = await auditService.auditSmartContract(code, geminiKey);
+        const result = await auditService.auditSmartContract(code, deepseekKey);
 
         // Update diagnostics
         if (documentUri) {

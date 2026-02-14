@@ -95,10 +95,10 @@
                     "description": "API Key for Groq (Speed Layer — Llama 3 thinking trace)",
                     "scope": "application"
                 },
-                "anchorguard.geminiApiKey": {
+                "anchorguard.deepseekApiKey": {
                     "type": "string",
                     "default": "",
-                    "description": "API Key for Google Gemini (Brain Layer — deep audit)",
+                    "description": "API Key for DeepSeek V3 (Brain Layer — deep audit, FREE)",
                     "scope": "application"
                 },
                 "anchorguard.autoAuditOnSave": {
@@ -148,7 +148,6 @@
         "@vscode/vsce": "^2.22.0"
     },
     "dependencies": {
-        "groq-sdk": "^0.5.0",
-        "@google/generative-ai": "^0.21.0"
+        "groq-sdk": "^0.5.0"
     }
 }

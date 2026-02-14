@@ -4,7 +4,7 @@
 
 ## ✨ Features
 
-- **🧠 Dual-AI Engine** — Groq Llama 3 (speed) + Gemini 1.5 Pro (depth)
+- **🧠 Dual-AI Engine** — Groq Llama 3.3 (speed) + DeepSeek V3 (depth, FREE)
 - **📍 Inline Diagnostics** — Squiggly lines on vulnerable code lines
 - **📊 Results Panel** — Beautiful audit dashboard inside VS Code
 - **🔍 Multi-Program** — Audit all `.rs` files in your workspace
@@ -23,7 +23,7 @@ npm run compile
 
 ### 2. Set API Keys
 Open VS Code Settings (`Ctrl+,`) and search for `AnchorGuard`:
-- **Gemini API Key** (required) — [Get it from Google AI Studio](https://aistudio.google.com)
+- **DeepSeek API Key** (required, FREE) — [Get it from DeepSeek Platform](https://platform.deepseek.com)
 - **Groq API Key** (optional, for thinking trace) — [Get it from Groq Cloud](https://console.groq.com)
 
 ### 3. Audit Your Code
@@ -45,7 +45,7 @@ Open VS Code Settings (`Ctrl+,`) and search for `AnchorGuard`:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `anchorguard.geminiApiKey` | `""` | Gemini API key for deep audit |
+| `anchorguard.deepseekApiKey` | `""` | DeepSeek API key for deep audit (FREE) |
 | `anchorguard.groqApiKey` | `""` | Groq API key for thinking trace |
 | `anchorguard.autoAuditOnSave` | `false` | Auto-audit on file save |
 | `anchorguard.severityFilter` | `"all"` | Min severity to show (`all`/`critical`/`high`/`medium`) |
@@ -61,7 +61,7 @@ Open VS Code Settings (`Ctrl+,`) and search for `AnchorGuard`:
 │  │ Rust File  │───▶│ AnchorGuard AI   │  │
 │  │ (Editor)   │    │                  │  │
 │  │            │◀───│ 1. Groq Thinking │  │
-│  │ ~~~ error  │    │ 2. Gemini Audit  │  │
+│  │ ~~~ error  │    │ 2. DeepSeek Audit│  │
 │  │ ~~~ warn   │    │ 3. Diagnostics   │  │
 │  └────────────┘    └──────────────────┘  │
 │                           │              │
