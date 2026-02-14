@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { auth, googleProvider, githubProvider } from '../services/firebase';
+import { signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import type { User, AuthProvider } from '../types';
 
 interface AuthContextType {
@@ -14,38 +16,42 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Simulated user data per provider (fallback for Google/GitHub)
-const MOCK_USERS: Record<string, Omit<User, 'joinedAt'>> = {
-  google: {
-    id: 'ggl-' + Math.random().toString(36).slice(2, 10),
-    name: 'Solana Developer',
-    email: 'dev@solana.builder',
-    avatar: '',
-    provider: 'google',
-    auditsCount: 12,
-  },
-  github: {
-    id: 'gh-' + Math.random().toString(36).slice(2, 10),
-    name: 'anchor_hacker',
-    email: 'anchor_hacker@github.dev',
-    avatar: '',
-    provider: 'github',
-    auditsCount: 37,
-  },
-};
-
 export function AuthProvider_({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading to check auth state
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // Real Solana Wallet Adapter Hook
   const { connected, publicKey, disconnect } = useWallet();
 
-  // Effect: Sync Wallet Status to Auth State
+  // Effect 1: Handle Firebase Auth State (Google/GitHub)
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      // If wallet is connected, wallet takes precedence or handled separately
+      // But for now, if Firebase user exists and no wallet connected, prioritize Firebase
+      if (firebaseUser && !connected) {
+        setUser({
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName || 'User',
+          email: firebaseUser.email || '',
+          avatar: firebaseUser.photoURL || undefined,
+          provider: firebaseUser.providerData[0]?.providerId.includes('github') ? 'github' : 'google',
+          auditsCount: 0, // In a real app, fetch from DB
+          joinedAt: firebaseUser.metadata.creationTime || new Date().toISOString()
+        });
+      } else if (!firebaseUser && !connected) {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [connected]);
+
+  // Effect 2: Sync Wallet Status to Auth State (Overrides Firebase if connected)
   useEffect(() => {
     if (connected && publicKey) {
-      // Real Wallet Connected -> Auto Login
+      // Real Wallet Connected -> Auto Login (Override Firebase user for this session context)
       setUser({
         id: publicKey.toBase58(),
         name: 'Solana Wallet',
@@ -56,8 +62,20 @@ export function AuthProvider_({ children }: { children: ReactNode }) {
       });
       setIsLoginModalOpen(false);
     } else if (!connected && user?.provider === 'wallet') {
-      // Wallet Disconnected -> Auto Logout
-      setUser(null);
+      // Wallet Disconnected -> Check if Firebase user exists (revert to Firebase user if valid)
+      if (auth.currentUser) {
+        setUser({
+          id: auth.currentUser.uid,
+          name: auth.currentUser.displayName || 'User',
+          email: auth.currentUser.email || '',
+          avatar: auth.currentUser.photoURL || undefined,
+          provider: auth.currentUser.providerData[0]?.providerId.includes('github') ? 'github' : 'google',
+          auditsCount: 0,
+          joinedAt: auth.currentUser.metadata.creationTime || new Date().toISOString()
+        });
+      } else {
+        setUser(null);
+      }
     }
   }, [connected, publicKey, user?.provider]);
 
@@ -65,30 +83,29 @@ export function AuthProvider_({ children }: { children: ReactNode }) {
   const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
 
   const login = useCallback(async (provider: AuthProvider) => {
-    // Wallet login is handled automatically by the useEffect
-    if (provider === 'wallet') return;
+    if (provider === 'wallet') return; // Wallet handled by adapter
 
     setIsLoading(true);
-
-    // Simulate API delay with loading animation for Google/GitHub
-    await new Promise(resolve => setTimeout(resolve, 1800));
-
-    const mockUser = MOCK_USERS[provider];
-    if (mockUser) {
-      setUser({
-        ...mockUser,
-        provider: provider, // Ensure provider type matches
-        joinedAt: new Date().toISOString(),
-      } as User);
+    try {
+      if (provider === 'google') {
+        await signInWithPopup(auth, googleProvider);
+      } else if (provider === 'github') {
+        await signInWithPopup(auth, githubProvider);
+      }
+      setIsLoginModalOpen(false);
+    } catch (error) {
+      console.error("Login failed:", error);
+      alert("Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
-    setIsLoginModalOpen(false);
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     if (user?.provider === 'wallet') {
       disconnect().catch(err => console.error("Disconnect error:", err));
+    } else {
+      await signOut(auth);
     }
     setUser(null);
   }, [user?.provider, disconnect]);
