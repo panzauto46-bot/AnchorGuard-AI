@@ -38,11 +38,15 @@ AnchorGuard runs on a dual-core AI architecture to balance speed and accuracy:
 | Feature | Description |
 |---------|-------------|
 | **Professional Editor** | Integrated **Monaco Editor** (VS Code engine) with custom Solana Rust syntax highlighting and dark/light themes. |
+| **Multi-Program Analysis** | Tab-based file system — audit **multiple programs** simultaneously with **cross-program vulnerability detection** (CPI, PDA sharing, authority mismatches). |
 | **Transparent AI Reasoning** | Watch the AI "think" through each vulnerability with full chain-of-thought reasoning steps displayed in real-time. |
-| **Deep Vulnerability Scan** | Detects critical issues like missing signer checks, integer overflow, authority validation gaps, and PDA issues. |
+| **Deep Vulnerability Scan** | Detects critical issues like missing signer checks, integer overflow, authority validation gaps, PDA issues, and cross-program invocation flaws. |
 | **Secure Authentication** | **Hybrid Auth System**: Real login via **Google/GitHub** (Firebase) and **Wallet Connection** (Phantom/Solflare) for seamless Web2 & Web3 access. |
 | **Auto-Fix & Diff View** | Generates instant code fixes with side-by-side diff comparison — vulnerable vs. secure code, one click to copy. |
 | **Compute Unit Optimizer** | Analyzes compute unit efficiency and provides gas optimization suggestions specific to the Solana runtime. |
+| **PDF & Markdown Export** | Download professional audit reports as **PDF** (dark-themed, color-coded) or **Markdown** (GitHub/Notion-ready). |
+| **Audit History** | All past audits auto-saved to `localStorage` with scores, timestamps, and issue breakdowns — persistent across sessions. |
+| **User Profile & Settings** | Real profile modal (Firebase/Wallet data), customizable AI model, Solana network, theme, and history preferences. |
 
 ---
 
@@ -69,6 +73,7 @@ VITE_GEMINI_API_KEY="your_gemini_api_key"
 | **Styling** | Tailwind CSS 4 | Utility-first CSS with custom Solana theme tokens |
 | **Auth (Web2)** | Firebase Auth | Secure Google & GitHub login integration |
 | **Auth (Web3)** | Solana Wallet Adapter | Native connection for Phantom, Solflare, Backpack |
+| **PDF Export** | jsPDF | Client-side PDF generation with dark-themed reports |
 | **Icons** | Lucide React | Beautiful, consistent icon set |
 | **Typography** | Inter + JetBrains Mono | Clean UI font paired with developer-grade monospace |
 | **Deployment** | Vercel | Edge-optimized global deployment |
@@ -115,50 +120,52 @@ npm run preview
 ## 🔬 How It Works
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                  AnchorGuard AI                     │
-│                                                     │
-│  ┌──────────────┐     ┌──────────────────────────┐  │
-│  │              │     │                          │  │
-│  │  Code Editor │────▶│  AI Reasoning Engine     │  │
-│  │  (Input)     │     │                          │  │
-│  │              │     │  1. Parse Anchor structs  │  │
-│  └──────────────┘     │  2. Analyze constraints   │  │
-│                       │  3. Check access control  │  │
-│                       │  4. Detect arithmetic     │  │
-│                       │  5. Validate PDAs         │  │
-│                       │  6. Optimize compute      │  │
-│                       │                          │  │
-│                       └──────────┬───────────────┘  │
-│                                  │                  │
-│                                  ▼                  │
-│                       ┌──────────────────────────┐  │
-│                       │                          │  │
-│                       │  Audit Dashboard         │  │
-│                       │  • Security Score        │  │
-│                       │  • Vulnerability Cards   │  │
-│                       │  • Auto-Fix Diffs        │  │
-│                       │  • Gas Optimizations     │  │
-│                       │                          │  │
-│                       └──────────────────────────┘  │
-│                                  │                  │
-│                                  ▼                  │
-│                       ┌──────────────────────────┐  │
-│                       │                          │  │
-│                       │   Authentication         │  │
-│                       │  • Google / GitHub       │  │
-│                       │  • Phantom / Solflare    │  │
-│                       │                          │  │
-│                       └──────────────────────────┘  │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                    AnchorGuard AI                        │
+│                                                         │
+│  ┌──────────────────┐     ┌────────────────────────────┐│
+│  │                  │     │                            ││
+│  │  Multi-Program   │────▶│  AI Reasoning Engine       ││
+│  │  Editor (Tabs)   │     │                            ││
+│  │                  │     │  1. Parse Anchor structs   ││
+│  │  • program.rs    │     │  2. Analyze constraints    ││
+│  │  • vault.rs      │     │  3. Check access control   ││
+│  │  • token.rs      │     │  4. Detect arithmetic      ││
+│  │  • + Add         │     │  5. Validate PDAs          ││
+│  │                  │     │  6. Cross-program CPI      ││
+│  └──────────────────┘     │  7. Optimize compute       ││
+│                           │                            ││
+│                           └──────────┬─────────────────┘│
+│                                      │                  │
+│                                      ▼                  │
+│                           ┌────────────────────────────┐│
+│                           │                            ││
+│                           │  Audit Dashboard           ││
+│                           │  • Security Score          ││
+│                           │  • Vulnerability Cards     ││
+│                           │  • Auto-Fix Diffs          ││
+│                           │  • Gas Optimizations       ││
+│                           │  • Export (PDF/MD)         ││
+│                           │                            ││
+│                           └──────────┬─────────────────┘│
+│                                      │                  │
+│                   ┌──────────────────┼──────────────┐   │
+│                   ▼                  ▼              ▼   │
+│           ┌──────────────┐  ┌──────────────┐  ┌───────┐│
+│           │ Auth         │  │ History      │  │ User  ││
+│           │ Google/GitHub│  │ localStorage │  │ Prefs ││
+│           │ Phantom/Sol  │  │ Persistence  │  │ & Set ││
+│           └──────────────┘  └──────────────┘  └───────┘│
+└─────────────────────────────────────────────────────────┘
 ```
 
 ### Workflow
 
-1. **Paste or Load** — Input your Solana/Anchor smart contract code (or load the built-in sample)
-2. **Run AI Audit** — The reasoning engine processes your code step by step
+1. **Paste or Load** — Input your Solana/Anchor smart contract code (supports **multiple files** via tabs)
+2. **Run AI Audit** — The reasoning engine processes all programs, including cross-program analysis
 3. **Watch AI Think** — See the transparent Chain-of-Thought reasoning in the terminal
 4. **Review Results** — Get a comprehensive dashboard with security score, vulnerabilities, fixes, and optimizations
+5. **Export Report** — Download as **PDF** (professional dark-themed) or **Markdown** (GitHub/Notion-ready)
 
 ---
 
@@ -167,38 +174,44 @@ npm run preview
 ```
 AnchorGuard-AI/
 ├── index.html                  # Entry HTML
-├── vite.config.ts              # Vite configuration
+├── vite.config.ts              # Vite configuration + Node polyfills
 ├── vercel.json                 # Vercel deployment config
 ├── tsconfig.json               # TypeScript configuration
 ├── package.json                # Dependencies & scripts
 │
 └── src/
-    ├── main.tsx                # App entry point
-    ├── App.tsx                 # Root application component
+    ├── main.tsx                # App entry point (WalletContext wrapped)
+    ├── App.tsx                 # Root component (multi-file state, modals)
     ├── index.css               # Global styles & Tailwind theme
     ├── types.ts                # TypeScript type definitions
+    │
     ├── services/
     │   ├── ai.ts               # Hybrid AI (Groq + Gemini) service
+    │   ├── export.ts           # PDF & Markdown report generator
     │   └── firebase.ts         # Firebase Auth configuration
     │
     ├── components/
     │   ├── Header.tsx          # Navigation header with auth
+    │   ├── Sidebar.tsx         # Multi-program tab system
     │   ├── CodeEditor.tsx      # Smart contract code editor
     │   ├── ThinkingTerminal.tsx # AI reasoning terminal display
-    │   ├── AuditDashboard.tsx  # Security audit results dashboard
+    │   ├── AuditDashboard.tsx  # Security audit results + export
     │   ├── WelcomeScreen.tsx   # Landing/overview screen
     │   ├── VulnerabilityCard.tsx# Individual vulnerability display
     │   ├── GasOptimizer.tsx    # Compute unit optimizer
     │   ├── LoginModal.tsx      # Authentication modal
-    │   └── UserMenu.tsx        # User dropdown menu
+    │   ├── UserMenu.tsx        # User dropdown menu
+    │   ├── ProfileModal.tsx    # User profile display
+    │   ├── AuditHistoryModal.tsx# Audit history viewer
+    │   └── SettingsModal.tsx   # App settings panel
     │
     ├── context/
-    │   ├── AuthContext.tsx      # Authentication state management
+    │   ├── AuthContext.tsx      # Auth state (Firebase + Wallet)
     │   ├── WalletContextProvider.tsx # Solana Wallet Adapter context
     │   └── ThemeContext.tsx     # Dark/Light theme management
     │
     ├── data/
-    │   ├── sampleCode.ts       # Sample Anchor program for demo
+    │   └── sampleCode.ts       # Sample Anchor program for demo
     │
     └── utils/
         └── cn.ts               # Tailwind class merge utility
@@ -253,10 +266,14 @@ The `vercel.json` configuration handles:
 - [x] **Secure Authentication** (Google, GitHub via Firebase)
 - [x] Live Groq/Gemini integration for dynamic analysis
 - [x] **Real Wallet Connection** (Phantom, Solflare, Backpack)
-- [ ] Audit history & persistence
-- [ ] Multi-program analysis
-- [ ] PDF/Markdown report export
+- [x] **Audit History & Persistence** (localStorage)
+- [x] **Multi-Program Analysis** (tab system + cross-program CPI detection)
+- [x] **PDF & Markdown Report Export** (jsPDF + .md download)
+- [x] **User Profile & Settings** (real data, customizable preferences)
 - [ ] IDE extensions (VS Code, Cursor)
+- [ ] On-chain audit verification (Solana Program)
+- [ ] Team collaboration & shared audits
+- [ ] CI/CD integration (GitHub Actions)
 
 ---
 
