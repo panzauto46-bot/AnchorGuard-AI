@@ -186,7 +186,7 @@ AnchorGuard-AI/
     ├── types.ts                # TypeScript type definitions
     │
     ├── services/
-    │   ├── ai.ts               # Hybrid AI (Groq + Gemini) service
+    │   ├── ai.ts               # Hybrid AI (Groq + DeepSeek V3) service
     │   ├── export.ts           # PDF & Markdown report generator
     │   └── firebase.ts         # Firebase Auth configuration
     │
@@ -222,7 +222,7 @@ vscode-extension/               # VS Code & Cursor Extension
 ├── README.md                   # Extension documentation
 └── src/
     ├── extension.ts            # Extension entry point & commands
-    ├── auditService.ts         # AI service (Groq + Gemini)
+    ├── auditService.ts         # AI service (Groq + DeepSeek)
     ├── diagnostics.ts          # Inline diagnostics provider
     └── webviewPanel.ts         # Results panel webview
 ```
