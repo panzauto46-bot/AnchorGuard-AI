@@ -237,7 +237,7 @@ The `vercel.json` configuration handles:
 - [x] Dark/Light theme support
 - [x] Authentication UI (Google, GitHub, Wallet)
 - [x] Live Groq/Gemini integration for dynamic analysis
-- [ ] Real wallet connection (Phantom, Solflare, Backpack)
+- [x] Real wallet connection (Phantom, Solflare, Backpack)
 - [ ] Audit history & persistence
 - [ ] Multi-program analysis
 - [ ] PDF/Markdown report export
