@@ -1,6 +1,6 @@
 import { Groq } from 'groq-sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import type { AuditResult, ThinkingStep } from '../types';
+import type { AuditResult } from '../types';
 
 // Initialize Clients
 const groq = new Groq({
@@ -23,7 +23,7 @@ export async function generateThinkingTrace(code: string): Promise<string[]> {
             messages: [
                 {
                     role: "system",
-                    content: "You are the kernel of a Solana Audit AI. Your job is to output 6-8 short, technical, 'hacker-style' log lines describing the security checks you are performing on the provided Rust code. Do NOT find bugs yet. Just describe the scan process. Examples: 'Parsing Anchor macros...', 'Verifying Signer constraints...', 'Checking arithmetic overflows...', 'Scanning for reentrancy...', 'Validating PDA seeds...'. Output ONLY the lines, separated by newlines."
+                    content: "You are the kernel of a Solana Audit AI. Your job is to output 6-8 short, technical, 'hacker-style' log lines describing the security checks you are performing on the provided Rust code. The code may contain MULTIPLE programs separated by file markers like '// === FILE: name ==='. If multiple programs are detected, include cross-program analysis steps. Do NOT find bugs yet. Just describe the scan process. Examples: 'Parsing Anchor macros...', 'Verifying Signer constraints...', 'Checking arithmetic overflows...', 'Scanning for reentrancy...', 'Validating PDA seeds...', 'Analyzing cross-program invocations...', 'Checking shared PDA ownership...'. Output ONLY the lines, separated by newlines."
                 },
                 {
                     role: "user",
@@ -57,8 +57,16 @@ export async function auditSmartContract(code: string): Promise<AuditResult> {
     const model = getGeminiModel();
 
     const prompt = `
-    You are an elite Solana Smart Contract Security Auditor. 
+    You are an elite Solana Smart Contract Security Auditor.
     Analyze the following Anchor/Rust code for security vulnerabilities.
+    
+    IMPORTANT: The code may contain MULTIPLE programs separated by file markers like:
+    // === FILE: program_name.rs ===
+    If multiple programs are present, you MUST also analyze:
+    - Cross-Program Invocation (CPI) security
+    - Shared PDA seed conflicts between programs
+    - Authority/ownership mismatches across programs
+    - Token account validation across program boundaries
     
     Focus on:
     1. Missing Signer checks
@@ -67,6 +75,7 @@ export async function auditSmartContract(code: string): Promise<AuditResult> {
     4. PDA Validation (seeds, bump)
     5. Reentrancy
     6. Unchecked AccountInfo usage
+    7. Cross-Program Invocation vulnerabilities (if multiple programs)
 
     Output a JSON object perfectly matching this TypeScript interface:
     

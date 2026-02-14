@@ -7,6 +7,7 @@ import { ProfileModal } from './components/ProfileModal';
 import { AuditHistoryModal } from './components/AuditHistoryModal';
 import { SettingsModal, DEFAULT_SETTINGS } from './components/SettingsModal';
 import { Sidebar } from './components/Sidebar';
+import type { ProgramFile } from './components/Sidebar';
 import { ThinkingTerminal } from './components/ThinkingTerminal';
 import { AuditDashboard } from './components/AuditDashboard';
 import { WelcomeScreen } from './components/WelcomeScreen';
@@ -20,7 +21,12 @@ type RightTab = 'welcome' | 'thinking' | 'results';
 
 function AppContent() {
   const { isDark } = useTheme();
-  const [code, setCode] = useState('');
+
+  // Multi-program file management
+  const [files, setFiles] = useState<ProgramFile[]>([
+    { id: 'file-1', name: 'program.rs', code: '' }
+  ]);
+  const [activeFileId, setActiveFileId] = useState('file-1');
   const [phase, setPhase] = useState<Phase>('idle');
   const [rightTab, setRightTab] = useState<RightTab>('welcome');
   const [thinkingSteps, setThinkingSteps] = useState<ThinkingStep[]>([]);
@@ -86,8 +92,35 @@ function AppContent() {
     setAppSettings(newSettings);
   }, []);
 
+  // File management callbacks
+  const handleUpdateFile = useCallback((id: string, code: string) => {
+    setFiles(prev => prev.map(f => f.id === id ? { ...f, code } : f));
+  }, []);
+
+  const handleAddFile = useCallback(() => {
+    const newId = `file-${Date.now()}`;
+    const num = files.length + 1;
+    setFiles(prev => [...prev, { id: newId, name: `program_${num}.rs`, code: '' }]);
+    setActiveFileId(newId);
+  }, [files.length]);
+
+  const handleRemoveFile = useCallback((id: string) => {
+    setFiles(prev => {
+      const next = prev.filter(f => f.id !== id);
+      if (activeFileId === id && next.length > 0) {
+        setActiveFileId(next[0].id);
+      }
+      return next;
+    });
+  }, [activeFileId]);
+
+  const handleRenameFile = useCallback((id: string, name: string) => {
+    setFiles(prev => prev.map(f => f.id === id ? { ...f, name } : f));
+  }, []);
+
   const handleAudit = useCallback(async () => {
-    if (!code.trim()) return;
+    const codeToAudit = files.filter(f => f.code.trim()).map(f => `// === FILE: ${f.name} ===\n${f.code}`).join('\n\n');
+    if (!codeToAudit.trim()) return;
 
     setError(null);
     setPhase('thinking');
@@ -98,9 +131,17 @@ function AppContent() {
 
     try {
       // 1. Start Groq Thinking Trace (Speed Layer)
-      setThinkingSteps([{ id: 0, text: "🔄 Initializing hybrid AI engine...", type: "info", timestamp: new Date().toLocaleTimeString() }]);
+      const programCount = files.filter(f => f.code.trim()).length;
+      setThinkingSteps([{
+        id: 0,
+        text: programCount > 1
+          ? `🔄 Initializing multi-program analysis (${programCount} programs)...`
+          : "🔄 Initializing hybrid AI engine...",
+        type: "info",
+        timestamp: new Date().toLocaleTimeString()
+      }]);
 
-      const thoughts = await generateThinkingTrace(code);
+      const thoughts = await generateThinkingTrace(codeToAudit);
 
       // Simulate typing effect for thoughts
       thoughts.forEach((thought, index) => {
@@ -119,7 +160,7 @@ function AppContent() {
 
       // 2. Start Gemini Deep Audit (Brain Layer)
       // Note: If API key is missing, this will throw an error caught below
-      const result = await auditSmartContract(code);
+      const result = await auditSmartContract(codeToAudit);
 
       // Buffer time to let thoughts finish animating
       const minThinkTime = thoughts.length * 800 + 1500;
@@ -128,7 +169,7 @@ function AppContent() {
         setThinkingComplete(true);
         setAuditResult(result);
         // Save to history
-        saveToHistory(result, code);
+        saveToHistory(result, codeToAudit);
 
         // Auto switch to results
         setTimeout(() => {
@@ -148,11 +189,12 @@ function AppContent() {
       }]);
       setThinkingComplete(true); // Stop spinner
     }
-  }, [code]);
+  }, [files, saveToHistory]);
 
   const handleLoadSample = useCallback(() => {
-    setCode(SAMPLE_CODE);
-  }, []);
+    // Load sample into active file
+    setFiles(prev => prev.map(f => f.id === activeFileId ? { ...f, code: SAMPLE_CODE } : f));
+  }, [activeFileId]);
 
   const isAuditing = phase === 'thinking';
 
@@ -190,8 +232,13 @@ function AppContent() {
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Left Panel: Sidebar (Input Zone) */}
         <Sidebar
-          code={code}
-          setCode={setCode}
+          files={files}
+          activeFileId={activeFileId}
+          onSetActiveFile={setActiveFileId}
+          onUpdateFile={handleUpdateFile}
+          onAddFile={handleAddFile}
+          onRemoveFile={handleRemoveFile}
+          onRenameFile={handleRenameFile}
           handleAudit={handleAudit}
           isAuditing={isAuditing}
         />

@@ -12,9 +12,10 @@ interface CodeEditorProps {
   onCodeChange: (code: string) => void;
   onAudit: () => void;
   isAuditing: boolean;
+  fileName?: string;
 }
 
-export function CodeEditor({ code, onCodeChange, onAudit, isAuditing }: CodeEditorProps) {
+export function CodeEditor({ code, onCodeChange, onAudit, isAuditing, fileName }: CodeEditorProps) {
   const { isDark } = useTheme();
   const [copied, setCopied] = useState(false);
   const editorRef = useRef<any>(null);
@@ -79,7 +80,7 @@ export function CodeEditor({ code, onCodeChange, onAudit, isAuditing }: CodeEdit
           </div>
           <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium ${isDark ? 'bg-white/5 text-zinc-400' : 'bg-zinc-200 text-zinc-600'}`}>
             <Code2 className="w-3 h-3" />
-            program.rs
+            {fileName || 'program.rs'}
           </div>
         </div>
         <div className="flex items-center gap-1">
