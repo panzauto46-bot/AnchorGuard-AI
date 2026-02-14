@@ -79,7 +79,7 @@ export class AuditService {
     // Brain Layer: Gemini 1.5 Pro for deep audit
     async auditSmartContract(code: string, apiKey: string): Promise<AuditResult> {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
         const prompt = `
         You are an elite Solana Smart Contract Security Auditor.

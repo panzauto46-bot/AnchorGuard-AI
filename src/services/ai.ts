@@ -11,9 +11,9 @@ const groq = new Groq({
 // Gemini Client initialization (lazy load)
 const getGeminiModel = () => {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) throw new Error("Gemini API Key is missing");
+    if (!apiKey) throw new Error("Gemini API Key is missing. Set VITE_GEMINI_API_KEY in .env or Vercel.");
     const genAI = new GoogleGenerativeAI(apiKey);
-    return genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    return genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 };
 
 // 1. SPEED LAYER: Groq (Llama 3) for Visual Thinking
@@ -125,8 +125,9 @@ export async function auditSmartContract(code: string): Promise<AuditResult> {
         const jsonString = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
         return JSON.parse(jsonString) as AuditResult;
-    } catch (error) {
+    } catch (error: any) {
         console.error("Gemini Error:", error);
-        throw new Error("Failed to perform deep audit. Please check your Gemini API Key.");
+        const detail = error?.message || error?.statusText || 'Unknown error';
+        throw new Error(`Failed to perform deep audit: ${detail}`);
     }
 }
