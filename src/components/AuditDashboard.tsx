@@ -5,6 +5,7 @@ import type { AuditResult } from '../types';
 import { VulnerabilityCard } from './VulnerabilityCard';
 import { GasOptimizer } from './GasOptimizer';
 import { downloadMarkdown, downloadPDF } from '../services/export';
+import { OnChainVerify } from './OnChainVerify';
 
 interface AuditDashboardProps {
   result: AuditResult;
@@ -169,6 +170,9 @@ export function AuditDashboard({ result }: AuditDashboardProps) {
 
       {/* Gas Optimizations */}
       <GasOptimizer optimizations={result.gasOptimizations} />
+
+      {/* On-Chain Verification */}
+      <OnChainVerify result={result} />
     </div>
   );
 }

@@ -281,7 +281,7 @@ The `vercel.json` configuration handles:
 - [x] **PDF & Markdown Report Export** (jsPDF + .md download)
 - [x] **User Profile & Settings** (real data, customizable preferences)
 - [x] **IDE Extensions** (VS Code & Cursor — inline diagnostics, results panel, keyboard shortcuts)
-- [ ] On-chain audit verification (Solana Program)
+- [x] **On-Chain Audit Verification** (Solana Devnet — publish audit hash, verification badge, free airdrop)
 - [ ] Team collaboration & shared audits
 - [ ] CI/CD integration (GitHub Actions)
 
