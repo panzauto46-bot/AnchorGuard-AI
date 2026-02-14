@@ -1,14 +1,14 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { AuthProvider_ } from './context/AuthContext';
 import { Header } from './components/Header';
 import { LoginModal } from './components/LoginModal';
-import { CodeEditor } from './components/CodeEditor';
+import { Sidebar } from './components/Sidebar';
 import { ThinkingTerminal } from './components/ThinkingTerminal';
 import { AuditDashboard } from './components/AuditDashboard';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { SAMPLE_CODE } from './data/sampleCode';
-import { getThinkingSteps, getAuditResult } from './data/auditEngine';
+import { generateThinkingTrace, auditSmartContract } from './services/ai';
 import type { ThinkingStep, AuditResult } from './types';
 import { Layers, Brain, FileSearch } from 'lucide-react';
 
@@ -23,41 +23,70 @@ function AppContent() {
   const [thinkingSteps, setThinkingSteps] = useState<ThinkingStep[]>([]);
   const [thinkingComplete, setThinkingComplete] = useState(false);
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  /* AI Service Integration */
+  const [error, setError] = useState<string | null>(null);
 
-  const clearTimers = () => {
-    timerRef.current.forEach(clearTimeout);
-    timerRef.current = [];
-  };
+  const handleAudit = useCallback(async () => {
+    if (!code.trim()) return;
 
-  const handleAudit = useCallback(() => {
-    clearTimers();
+    setError(null);
     setPhase('thinking');
     setRightTab('thinking');
     setThinkingSteps([]);
     setThinkingComplete(false);
     setAuditResult(null);
 
-    const steps = getThinkingSteps();
-    
-    steps.forEach((step, index) => {
-      const timer = setTimeout(() => {
-        setThinkingSteps(prev => [...prev, step]);
+    try {
+      // 1. Start Groq Thinking Trace (Speed Layer)
+      setThinkingSteps([{ id: 0, text: "🔄 Initializing hybrid AI engine...", type: "info", timestamp: new Date().toLocaleTimeString() }]);
 
-        // Last step
-        if (index === steps.length - 1) {
-          const completeTimer = setTimeout(() => {
-            setThinkingComplete(true);
-            setAuditResult(getAuditResult());
-            setPhase('results');
-            setRightTab('results');
-          }, 1200);
-          timerRef.current.push(completeTimer);
-        }
-      }, (index + 1) * 600);
-      timerRef.current.push(timer);
-    });
-  }, []);
+      const thoughts = await generateThinkingTrace(code);
+
+      // Simulate typing effect for thoughts
+      thoughts.forEach((thought, index) => {
+        setTimeout(() => {
+          setThinkingSteps(prev => [
+            ...prev,
+            {
+              id: prev.length + 1,
+              text: `🔍 ${thought}`,
+              type: 'thinking',
+              timestamp: new Date().toLocaleTimeString()
+            }
+          ]);
+        }, index * 800);
+      });
+
+      // 2. Start Gemini Deep Audit (Brain Layer)
+      // Note: If API key is missing, this will throw an error caught below
+      const result = await auditSmartContract(code);
+
+      // Buffer time to let thoughts finish animating
+      const minThinkTime = thoughts.length * 800 + 1500;
+
+      setTimeout(() => {
+        setThinkingComplete(true);
+        setAuditResult(result);
+
+        // Auto switch to results
+        setTimeout(() => {
+          setPhase('results');
+          setRightTab('results');
+        }, 1200);
+      }, minThinkTime);
+
+    } catch (err: any) {
+      console.error("Audit Failed:", err);
+      // Fallback error handling
+      setThinkingSteps(prev => [...prev, {
+        id: 999,
+        text: `❌ ERROR: ${err.message || "Audit failed. Please check API Keys."}`,
+        type: "error",
+        timestamp: new Date().toLocaleTimeString()
+      }]);
+      setThinkingComplete(true); // Stop spinner
+    }
+  }, [code]);
 
   const handleLoadSample = useCallback(() => {
     setCode(SAMPLE_CODE);
@@ -78,27 +107,13 @@ function AppContent() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Left Panel: Code Editor */}
-        <div className={`w-full lg:w-1/2 flex flex-col border-r ${isDark ? 'border-dark-border' : 'border-light-border'}`} style={{ minHeight: '400px' }}>
-          {/* Panel Header */}
-          <div className={`flex items-center gap-2 px-4 py-2.5 border-b ${isDark ? 'border-dark-border bg-dark-surface/50' : 'border-light-border bg-zinc-50/50'}`}>
-            <div className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-solana-green' : 'bg-solana-purple'}`} />
-            <span className={`text-xs font-semibold ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-              INPUT ZONE
-            </span>
-            <span className={`ml-auto text-[10px] font-mono ${isDark ? 'text-zinc-600' : 'text-zinc-400'}`}>
-              {code.split('\n').length} lines
-            </span>
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <CodeEditor
-              code={code}
-              onCodeChange={setCode}
-              onAudit={handleAudit}
-              isAuditing={isAuditing}
-            />
-          </div>
-        </div>
+        {/* Left Panel: Sidebar (Input Zone) */}
+        <Sidebar
+          code={code}
+          setCode={setCode}
+          handleAudit={handleAudit}
+          isAuditing={isAuditing}
+        />
 
         {/* Right Panel: Intelligence Zone */}
         <div className="w-full lg:w-1/2 flex flex-col" style={{ minHeight: '400px' }}>
@@ -114,19 +129,18 @@ function AppContent() {
                   key={tab.key}
                   onClick={() => tab.available && setRightTab(tab.key)}
                   disabled={!tab.available}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
-                    rightTab === tab.key
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all ${rightTab === tab.key
+                    ? isDark
+                      ? 'bg-white/10 text-white'
+                      : 'bg-zinc-200 text-zinc-900'
+                    : tab.available
                       ? isDark
-                        ? 'bg-white/10 text-white'
-                        : 'bg-zinc-200 text-zinc-900'
-                      : tab.available
-                        ? isDark
-                          ? 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
-                          : 'text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100'
-                        : isDark
-                          ? 'text-zinc-700 cursor-not-allowed'
-                          : 'text-zinc-300 cursor-not-allowed'
-                  }`}
+                        ? 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                        : 'text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100'
+                      : isDark
+                        ? 'text-zinc-700 cursor-not-allowed'
+                        : 'text-zinc-300 cursor-not-allowed'
+                    }`}
                 >
                   {tab.icon}
                   {tab.label}
@@ -159,9 +173,8 @@ function AppContent() {
       </div>
 
       {/* Footer */}
-      <footer className={`border-t py-2 px-4 flex items-center justify-between text-[10px] ${
-        isDark ? 'border-dark-border bg-dark-surface/50 text-zinc-600' : 'border-light-border bg-zinc-50/50 text-zinc-400'
-      }`}>
+      <footer className={`border-t py-2 px-4 flex items-center justify-between text-[10px] ${isDark ? 'border-dark-border bg-dark-surface/50 text-zinc-600' : 'border-light-border bg-zinc-50/50 text-zinc-400'
+        }`}>
         <span>
           AnchorGuard AI v0.1.0 — The AI-Powered Reasoning Auditor for Solana Smart Contracts
         </span>

@@ -29,38 +29,32 @@
 
 ## ✨ Key Features
 
-<table>
-  <tr>
-    <td align="center" width="25%">
-      <h3>🧬 Transparent AI Reasoning</h3>
-      <p>Watch the AI think through each vulnerability with a real-time terminal-style reasoning trace. Full chain-of-thought visible to the user.</p>
-    </td>
-    <td align="center" width="25%">
-      <h3>🔍 Vulnerability Detection</h3>
-      <p>Detects critical Solana/Anchor vulnerabilities: missing signer checks, integer overflow, authority validation gaps, and PDA issues.</p>
-    </td>
-    <td align="center" width="25%">
-      <h3>🔧 Auto-Fix & Diff View</h3>
-      <p>Generates instant code fixes with side-by-side diff comparison — vulnerable vs. secure code, one click to copy.</p>
-    </td>
-    <td align="center" width="25%">
-      <h3>⚡ Compute Optimizer</h3>
-      <p>Analyzes compute unit efficiency and provides gas optimization suggestions specific to the Solana runtime.</p>
-    </td>
-  </tr>
-</table>
+### 🧠 Hybrid AI Engine
+AnchorGuard runs on a dual-core AI architecture to balance speed and accuracy:
+- **Speed Layer (Groq Llama 3):** Generates real-time "Thinking Process" logs, giving users immediate visual feedback (token streaming >800 t/s).
+- **Brain Layer (Google Gemini 1.5 Pro):** Performs deep-dive security audits in the background, capable of understanding complex reentrancy paths and logic errors with massive context windows.
+
+### 🛡️ Core Capabilities
+| Feature | Description |
+|---------|-------------|
+| **Professional Editor** | Integrated **Monaco Editor** (VS Code engine) with custom Solana Rust syntax highlighting and dark/light themes. |
+| **Transparent AI Reasoning** | Watch the AI "think" through each vulnerability with full chain-of-thought reasoning steps displayed in real-time. |
+| **Deep Vulnerability Scan** | Detects critical issues like missing signer checks, integer overflow, authority validation gaps, and PDA issues. |
+| **Auto-Fix & Diff View** | Generates instant code fixes with side-by-side diff comparison — vulnerable vs. secure code, one click to copy. |
+| **Compute Unit Optimizer** | Analyzes compute unit efficiency and provides gas optimization suggestions specific to the Solana runtime. |
 
 ---
 
-## 🎯 Vulnerability Categories
+## 🔑 Environment Setup
+To enable the AI capabilities, you need to set up the following API keys in a `.env` file (or Vercel Environment Variables):
 
-| Category | Severity | Description |
-|----------|----------|-------------|
-| **Missing Signer Check** | 🔴 Critical | Detects when `AccountInfo` is used instead of `Signer` in sensitive operations |
-| **Authority Validation** | 🔴 Critical | Identifies missing `has_one` constraints on authority-gated instructions |
-| **Integer Overflow/Underflow** | 🟠 High | Flags unchecked arithmetic operations that can wrap around in release builds |
-| **PDA Validation** | 🟡 Medium | Catches missing `seeds`/`bump` constraints on PDA accounts |
-| **Reentrancy Patterns** | ✅ Checked | Validates state-before-transfer patterns to prevent reentrancy attacks |
+```bash
+VITE_GROQ_API_KEY="your_groq_api_key"
+VITE_GEMINI_API_KEY="your_gemini_api_key"
+```
+1. **Groq API:** Get it from [Groq Cloud](https://console.groq.com)
+2. **Gemini API:** Get it from [Google AI Studio](https://aistudio.google.com)
+
 
 ---
 
